@@ -1,0 +1,26 @@
+steps:
+  # 1. Build JAR using a valid Maven + JDK 17 image
+  - name: "maven:3.9-eclipse-temurin-17"
+    entrypoint: "mvn"
+    args: ["clean", "package", "-DskipTests"]
+    dir: "tutor-assistant" # <-- Ensure we're in the right subdirectory if pom.xml is not in root
+
+  # 2. Debug: List files in the target directory to confirm JAR was built
+  - name: "ubuntu"
+    args: ["ls", "-la"]
+    dir: "tutor-assistant/target"
+
+  # 3. Build Docker image from Dockerfile in tutor-assistant directory
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/verve-backend"
+      - "."
+    dir: "tutor-assistant"
+
+images:
+  - "gcr.io/$PROJECT_ID/verve-backend"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
